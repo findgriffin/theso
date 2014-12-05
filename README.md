@@ -21,7 +21,7 @@ similar terms. The list will be split into usages (noun, verb, adjective,
 adverb) and then sorted alphabetically.
 
 You can specify only certain usages that are of interest by adding a comma
-separated list of the usages you would like, for example.
+separated list of the usages you would like, for example:
     
     theso heavy noun,adj
 

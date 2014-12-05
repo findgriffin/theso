@@ -28,18 +28,24 @@ def fatal(message):
     print 'Usage is: theso query [key]'
     exit()
 
+### Parse command line. ###
 if len(sys.argv) > 1:
     query = sys.argv[1]
 else:
     fatal('No query parameter given.')
-
 usages = []
 if len(sys.argv) > 2:
     usages = sys.argv[2].split(',')
     for usage in usages:
         if not usage.lower() in USAGES:
             fatal('Invalid usage: ' + usage)
+if DEBUG:
+    if len(usages) > 0:
+        print 'Searching for usages: ' + ', '.join(usages)
+    else:
+        print 'Searching for all usages.'
 
+### Find a valid key. ###
 if os.environ.has_key(ENV_KEY):
     token = os.environ[ENV_KEY]
 elif len(TOKEN) > 0:
@@ -50,6 +56,7 @@ else:
 def pair(key, value):
     return '&' + key + '=' + value
 
+### Send request to altervista. ###
 pairs = pair(OUTPUT, JSON)+pair(LANG, ENG)+pair(KEY, token)+pair(WORD, query)
 try:
     if DEBUG:
@@ -58,11 +65,11 @@ try:
 except urllib2.HTTPError as err:
     fatal('Failed to request data: ' + err.msg)
 
+### Parse result. ###
 data = json.loads(response.read())
 if DEBUG:
     print 'Response data: ' + data
 output = {}
-
 for usage in data['response']:
     category = usage['list']['category'].lstrip('(').rstrip(')')
     if not output.has_key(category):
@@ -71,6 +78,7 @@ for usage in data['response']:
     for word in synonyms.split('|'):
         output[category].add(word)
 
+### Print result. ###
 for usage, words in output.items():
     if len(usages) is 0 or usage in usages:
         print
