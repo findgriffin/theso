@@ -20,6 +20,6 @@ or if you want to pass the key in via the command line:
 
     theso word [your_key]
 
-You will then be returned a list of synonyms, antonyms and similar terms. The
-list will be split into usages (noun, verb, adjective, adverb) and then sorted
-alphabetically.
+You will then be returned a comma separated list of synonyms, antonyms and
+similar terms. The list will be split into usages (noun, verb, adjective,
+adverb) and then sorted alphabetically.
