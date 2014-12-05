@@ -1,0 +1,67 @@
+#! /usr/bin/env python
+
+import json
+import os
+import sys
+import urllib2
+
+BASE = "http://thesaurus.altervista.org/thesaurus/v1?"
+
+# keys
+WORD    = "word"
+OUTPUT  = "output"
+LANG    = "language"
+KEY     = "key"
+ENV_KEY = "THESO_KEY"
+
+# values
+ENG     = "en_US"
+JSON    = "json"
+TOKEN   = ""
+
+
+def fatal(message):
+    print message
+    print "Usage is: theso query [key]"
+    exit()
+
+if len(sys.argv) > 1:
+    query = sys.argv[1]
+else:
+    fatal("No query parameter given")
+
+if len(sys.argv) > 2:
+    token = sys.argv[2]
+elif os.environ.has_key(ENV_KEY):
+    token = os.environ[ENV_KEY]
+elif len(TOKEN) > 0:
+    token = TOKEN
+else:
+    fatal("Could not find a valid altervista.org key")
+
+def pair(key, value):
+    return "&" + key + "=" + value
+
+pairs = pair(OUTPUT, JSON)+pair(LANG, ENG)+pair(KEY, token)+pair(WORD, query)
+try:
+    response = urllib2.urlopen(BASE + pairs)
+except urllib2.HTTPError as err:
+    fatal("Failed to request data: " + err.msg)
+
+data = json.loads(response.read())
+output = {}
+
+for usage in data['response']:
+    category = usage['list']['category'].lstrip('(').rstrip(')')
+    if not output.has_key(category):
+        output[category] = set()
+    synonyms = usage['list']['synonyms']
+    for word in synonyms.split('|'):
+        output[category].add(word)
+
+for usage, words in output.items():
+    print
+    print "As a " + usage.upper() + ": "
+    word_set = list(words)
+    word_set.sort()
+    print ", ".join(word_set)
