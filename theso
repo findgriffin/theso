@@ -5,30 +5,32 @@ import os
 import sys
 import urllib2
 
-BASE = "http://thesaurus.altervista.org/thesaurus/v1?"
+BASE = 'http://thesaurus.altervista.org/thesaurus/v1?'
+
+DEBUG = False
 
 # keys
-WORD    = "word"
-OUTPUT  = "output"
-LANG    = "language"
-KEY     = "key"
-ENV_KEY = "THESO_KEY"
+WORD    = 'word'
+OUTPUT  = 'output'
+LANG    = 'language'
+KEY     = 'key'
+ENV_KEY = 'THESO_KEY'
 
 # values
-ENG     = "en_US"
-JSON    = "json"
-TOKEN   = ""
+ENG     = 'en_US'
+JSON    = 'json'
+TOKEN   = ''
 
 
 def fatal(message):
     print message
-    print "Usage is: theso query [key]"
+    print 'Usage is: theso query [key]'
     exit()
 
 if len(sys.argv) > 1:
     query = sys.argv[1]
 else:
-    fatal("No query parameter given")
+    fatal('No query parameter given.')
 
 if len(sys.argv) > 2:
     token = sys.argv[2]
@@ -37,18 +39,22 @@ elif os.environ.has_key(ENV_KEY):
 elif len(TOKEN) > 0:
     token = TOKEN
 else:
-    fatal("Could not find a valid altervista.org key")
+    fatal('Could not find a valid altervista.org key.')
 
 def pair(key, value):
-    return "&" + key + "=" + value
+    return '&' + key + '=' + value
 
 pairs = pair(OUTPUT, JSON)+pair(LANG, ENG)+pair(KEY, token)+pair(WORD, query)
 try:
+    if DEBUG:
+        print BASE + pairs
     response = urllib2.urlopen(BASE + pairs)
 except urllib2.HTTPError as err:
-    fatal("Failed to request data: " + err.msg)
+    fatal('Failed to request data: ' + err.msg)
 
 data = json.loads(response.read())
+if DEBUG:
+    print 'Response data: ' + data
 output = {}
 
 for usage in data['response']:
@@ -61,7 +67,7 @@ for usage in data['response']:
 
 for usage, words in output.items():
     print
-    print "As a " + usage.upper() + ": "
+    print 'As a ' + usage.upper() + ': '
     word_set = list(words)
     word_set.sort()
-    print ", ".join(word_set)
+    print ', '.join(word_set)
