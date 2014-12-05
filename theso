@@ -21,6 +21,7 @@ ENG     = 'en_US'
 JSON    = 'json'
 TOKEN   = ''
 
+USAGES = ['adv', 'noun', 'verb', 'adj']
 
 def fatal(message):
     print message
@@ -32,9 +33,14 @@ if len(sys.argv) > 1:
 else:
     fatal('No query parameter given.')
 
+usages = []
 if len(sys.argv) > 2:
-    token = sys.argv[2]
-elif os.environ.has_key(ENV_KEY):
+    usages = sys.argv[2].split(',')
+    for usage in usages:
+        if not usage.lower() in USAGES:
+            fatal('Invalid usage: ' + usage)
+
+if os.environ.has_key(ENV_KEY):
     token = os.environ[ENV_KEY]
 elif len(TOKEN) > 0:
     token = TOKEN
@@ -66,8 +72,9 @@ for usage in data['response']:
         output[category].add(word)
 
 for usage, words in output.items():
-    print
-    print 'As a ' + usage.upper() + ': '
-    word_set = list(words)
-    word_set.sort()
-    print ', '.join(word_set)
+    if len(usages) is 0 or usage in usages:
+        print
+        print 'As a ' + usage.upper() + ': '
+        word_set = list(words)
+        word_set.sort()
+        print ', '.join(word_set)
